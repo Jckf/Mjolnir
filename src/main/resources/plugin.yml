@@ -1,0 +1,47 @@
+name: ${project.name}
+version: ${project.version}
+description: Advanced ban management.
+
+author: Jim Flaten
+website: http://www.flaten.it/
+
+main: ${main.class}
+database: true
+
+permissions:
+  mjolnir.info:
+    description: Gives access to Mjölnir information command and broadcasts.
+    default: true
+
+  mjolnir.tban:
+    description: Gives access to timed Mjölnir banning.
+    default: op
+
+  mjolnir.ban:
+    description: Gives access to Mjölnir banning.
+    default: op
+
+  mjolnir.unban:
+    description: Gives access to Mjölnir unbanning.
+    default: op
+
+commands:
+  minfo:
+    description: Gets information about a given player from Mjölnir.
+    usage: /<command> [player]
+    permission: <plugin name>.info
+
+  mtban:
+    description: Bans a given player for the given amount of time, with an optional reason.
+    usage: /<command> [player] [time] [reason]
+    permission: <plugin name>.tban
+
+  mban:
+    description: Bans a given player in Mjölnir, with an optional reason.
+    usage: /<command> [player] [reason]
+    permission: <plugin name>.ban
+
+  munban:
+    description: Unbans a given player in Mjölnir, with an optional reason.
+    usage: /<command> [player] [reason]
+    permission: <plugin name>.unban

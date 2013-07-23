@@ -1,0 +1,18 @@
+storage:
+  method: native
+
+kick:
+  message: You are banned. <reason>
+  expires:
+    format: dd-MM-yyyy HH:mm
+    message: " Expires <expires>"
+
+broadcast:
+  message: <op> <type>ned <player>. <reason>
+  expires:
+    format: dd-MM-yyyy HH:mm
+    message: " Expires <expires>."
+
+info:
+  timestamp:
+    format: dd-MM-yyyy HH:mm
