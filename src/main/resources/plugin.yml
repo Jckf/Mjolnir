@@ -13,35 +13,43 @@ permissions:
     description: Gives access to Mjölnir information command and broadcasts.
     default: true
 
-  mjolnir.tban:
-    description: Gives access to timed Mjölnir banning.
+  mjolnir.ban.temp:
+    description: Gives access to temporary Mjölnir banning.
     default: op
 
-  mjolnir.ban:
+  mjolnir.ban.perm:
     description: Gives access to Mjölnir banning.
     default: op
 
-  mjolnir.unban:
+  mjolnir.unban.temp:
+    description: Gives access to temporary Mjölnir unbanning.
+
+  mjolnir.unban.perm:
     description: Gives access to Mjölnir unbanning.
     default: op
 
 commands:
-  minfo:
+  infractions:
     description: Gets information about a given player from Mjölnir.
     usage: /<command> [player]
     permission: <plugin name>.info
 
-  mtban:
-    description: Bans a given player for the given amount of time, with an optional reason.
+  tempban:
+    description: Bans a given player in Mjölnir for the given amount of time, with an optional reason.
     usage: /<command> [player] [time] [reason]
-    permission: <plugin name>.tban
+    permission: <plugin name>.ban.temp
 
-  mban:
+  ban:
     description: Bans a given player in Mjölnir, with an optional reason.
     usage: /<command> [player] [reason]
-    permission: <plugin name>.ban
+    permission: <plugin name>.ban.perm
 
-  munban:
+  tempunban:
+    description: Unbans a given player in Mjölnir for the given amount of time, with an optional reason.
+    usage: /<command> [player] [time] [reason]
+    permission: <plugin name>.unban.temp
+
+  unban:
     description: Unbans a given player in Mjölnir, with an optional reason.
     usage: /<command> [player] [reason]
-    permission: <plugin name>.unban
+    permission: <plugin name>.unban.perm

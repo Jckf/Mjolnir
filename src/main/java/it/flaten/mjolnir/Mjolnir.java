@@ -122,11 +122,11 @@ public class Mjolnir extends JavaPlugin {
 		 * These are the classes that handle commands both in the console and
 		 * in-game.
 		 */
-		this.getCommand("minfo").setExecutor(new InfoCommand(this));
-		this.getCommand("mtban").setExecutor(new TempBanCommand(this));
-		this.getCommand("mban").setExecutor(new BanCommand(this));
-		this.getCommand("mtunban").setExecutor(new TempUnbanCommand(this));
-		this.getCommand("munban").setExecutor(new UnbanCommand(this));
+		this.getCommand("infractions").setExecutor(new InfoCommand(this));
+		this.getCommand("tempban").setExecutor(new TempBanCommand(this));
+		this.getCommand("ban").setExecutor(new BanCommand(this));
+		this.getCommand("tempunban").setExecutor(new TempUnbanCommand(this));
+		this.getCommand("unban").setExecutor(new UnbanCommand(this));
 	}
 
 	/**
@@ -147,11 +147,11 @@ public class Mjolnir extends JavaPlugin {
 		 * handler class instances, disables processing of the commands,
 		 * and allows the memory to be freed.
 		 */
-		this.getCommand("munban").setExecutor(null);
-		this.getCommand("mtunban").setExecutor(null);
-		this.getCommand("mban").setExecutor(null);
-		this.getCommand("mtban").setExecutor(null);
-		this.getCommand("minfo").setExecutor(null);
+		this.getCommand("unban").setExecutor(null);
+		this.getCommand("tempunban").setExecutor(null);
+		this.getCommand("ban").setExecutor(null);
+		this.getCommand("tempban").setExecutor(null);
+		this.getCommand("infractions").setExecutor(null);
 
 		this.getLogger().info(" * Event handlers...");
 
