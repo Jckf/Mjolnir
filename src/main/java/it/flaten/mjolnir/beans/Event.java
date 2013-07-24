@@ -23,13 +23,13 @@ public class Event implements Serializable {
         }
     }
 
-    @Id        private int            id;
-    @Column    private int            time;
-    @Column private String        player;
-    @Column private String        op;
-    @Column private EventType    type;
-    @Column private String        reason;
-    @Column private int            expires;
+    @Id     private int       id;
+    @Column private int       time;
+    @Column private String    player;
+    @Column private String    op;
+    @Column private EventType type;
+    @Column private String    reason;
+    @Column private int       expires;
 
     public void setId(int id) {
         this.id = id;
