@@ -482,7 +482,7 @@ public class Mjolnir extends JavaPlugin {
      * is not or there is no active event.
      *
      * @param player The name of the player to check.
-     * @return       Wether or not the given player is banned.
+     * @return       Whether or not the given player is banned.
      */
     public boolean isBanned(String player) {
         Event event = this.getActiveEvent(player);
