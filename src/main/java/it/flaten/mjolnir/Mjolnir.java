@@ -2,6 +2,7 @@ package it.flaten.mjolnir;
 
 import it.flaten.mjolnir.beans.Event;
 import it.flaten.mjolnir.commands.*;
+import it.flaten.mjolnir.events.IsBannedEvent;
 import it.flaten.mjolnir.listeners.PlayerListener;
 import it.flaten.mjolnir.storages.NativeStorage;
 import it.flaten.mjolnir.storages.Storage;
@@ -12,7 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The plugin's main class.
@@ -40,6 +43,8 @@ public class Mjolnir extends JavaPlugin {
     public static List<Class<?>> databaseClasses = new ArrayList<Class<?>>() {{
         add(Event.class);
     }};
+
+    private Map<String,Event> whyMap = new HashMap<>();
 
     /**
      * Plugin entry point.
@@ -219,17 +224,34 @@ public class Mjolnir extends JavaPlugin {
     }
 
     /**
-     * Get the active event for a player.
+     * Get the active {@link Event} for a player.
      *
      * Fetches the latest stored {@link Event} for the given player
      * that has not expired. Will return null of no {@link Event} is
      * found.
      *
-     * @param player The name of the player whose {@link Event}s to fetch.
+     * @param player The name of the player whose {@link Event} to fetch.
      * @return       The active {@link Event}, or null.
      */
     public Event getActiveEvent(String player) {
         return this.storage.loadActiveEvent(player);
+    }
+
+    /**
+     * Get an {@link Event} for an external plugin.
+     *
+     * Fires an {@link IsBannedEvent} and returns the {@link Event} returned from it,
+     * or null if there is no {@link Event}.
+     *
+     * @param player The name of the player whose {@link Event} to fetch.
+     * @return       An {@link Event} created by an external plugin, or null.
+     */
+    public Event getExternalEvent(String player) {
+        IsBannedEvent isBannedEvent = new IsBannedEvent(player);
+
+        this.getServer().getPluginManager().callEvent(isBannedEvent);
+
+        return isBannedEvent.getEvent();
     }
 
     /**
@@ -250,7 +272,7 @@ public class Mjolnir extends JavaPlugin {
                 .replace("<expires>",new SimpleDateFormat(this.getConfig().getString("kick.expires.format")).format(event.getExpires() * 1000L));
         }
 
-        return message;
+        return message.replace("&",String.valueOf(ChatColor.COLOR_CHAR));
     }
 
     /**
@@ -274,7 +296,7 @@ public class Mjolnir extends JavaPlugin {
                 .replace("<expires>",new SimpleDateFormat(this.getConfig().getString("broadcast.expires.format")).format(event.getExpires() * 1000L));
         }
 
-        return message;
+        return message.replace("&",String.valueOf(ChatColor.COLOR_CHAR));
     }
 
     /**
@@ -477,20 +499,89 @@ public class Mjolnir extends JavaPlugin {
     /**
      * Check if a player is banned.
      *
-     * Fetches the given player's active {@link Event}, and sees if it
-     * is a ban. Returns <code>true</code> if it is, and <code>false</code> if it
-     * is not or there is no active event.
+     * Checks if a player is banned in Mjölnir, and if not also queries external
+     * plugins using the {@link IsBannedEvent} event via {@link #isBannedExternally(String)}.
      *
      * @param player The name of the player to check.
      * @return       Whether or not the given player is banned.
      */
     public boolean isBanned(String player) {
+        return this.isBannedLocally(player) || this.isBannedExternally(player);
+    }
+
+    /**
+     * Check if a player is banned locally.
+     *
+     * Fetches the given player's active {@link Event} from our database, and
+     * checks its type.
+     * <p>
+     * If the player is banned, {@link #why(String)} can be invoked to get the
+     * {@link Event} dictating so.
+     *
+     * @param player The name of the player to check.
+     * @return       Whether or not the given player is banned locally.
+     */
+    public boolean isBannedLocally(String player) {
         Event event = this.getActiveEvent(player);
 
         if (event == null || event.getType() == Event.EventType.UNBAN) {
             return false;
         }
 
+        this.why(player,event);
+
         return true;
+    }
+
+    /**
+     * Check if a player is banned externally.
+     *
+     * Fires a {@link IsBannedEvent} to query external plugins for {@link Event}s,
+     * then checks the {@link it.flaten.mjolnir.beans.Event.EventType}.
+     * <p>
+     * If the player is banned, {@link #why(String)} can be invoked to get the
+     * {@link Event} dictating so.
+     *
+     * @param player
+     * @return
+     */
+    public boolean isBannedExternally(String player) {
+        Event event = this.getExternalEvent(player);
+
+        if (event == null || event.getType() == Event.EventType.UNBAN) {
+            return false;
+        }
+
+        this.why(player,event);
+
+        return true;
+    }
+
+    /**
+     * Set which {@link Event} dictated the given player's fate.
+     *
+     * Used to let others know why {@link #isBanned(String)} returned what it did.
+     * Memory is freed if the {@link Event} is null.
+     *
+     * @param player The name of the player this {@link Event} belongs to
+     * @param event  The {@link Event}.
+     */
+    public void why(String player,Event event) {
+        if (event == null) {
+            this.whyMap.remove(player);
+            return;
+        }
+
+        this.whyMap.put(player,event);
+    }
+
+    /**
+     * Get the {@link Event} that dictated the given player's fate.
+     *
+     * @param player The name of the player whose {@link Event} to fetch.
+     * @return       The {@link Event}.
+     */
+    public Event why(String player) {
+        return this.whyMap.get(player);
     }
 }

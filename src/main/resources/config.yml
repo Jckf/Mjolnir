@@ -2,16 +2,16 @@ storage:
   method: native
 
 kick:
-  message: You are banned. <reason>
+  message: '&cYou are banned. &r<reason>'
   expires:
     format: dd-MM-yyyy HH:mm
-    message: " Expires <expires>"
+    message: ' &aExpires <expires>'
 
 broadcast:
   message: <op> <type>ned <player>. <reason>
   expires:
     format: dd-MM-yyyy HH:mm
-    message: " Expires <expires>."
+    message: ' Expires <expires>.'
 
 info:
   timestamp:

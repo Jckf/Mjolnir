@@ -4,6 +4,7 @@ import it.flaten.mjolnir.Mjolnir;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 /**
  * {@link Listener} for {@link org.bukkit.entity.Player} related events.
@@ -42,8 +43,23 @@ public class PlayerListener implements Listener {
         String player = event.getPlayer().getName();
 
         if (this.plugin.isBanned(player)) {
-            event.setKickMessage(this.plugin.buildKickMessage(this.plugin.getActiveEvent(player)));
+            event.setKickMessage(this.plugin.buildKickMessage(this.plugin.why(player)));
             event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
         }
+    }
+
+    /**
+     * Handle player quit event.
+     *
+     * Removes the player from the {@link Mjolnir#why(String)} {@link it.flaten.mjolnir.beans.Event} cache.
+     *
+     * @param event
+     */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        this.plugin.why(
+            event.getPlayer().getName(),
+            null
+        );
     }
 }
