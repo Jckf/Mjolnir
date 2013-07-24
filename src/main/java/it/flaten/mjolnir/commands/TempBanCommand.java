@@ -51,8 +51,8 @@ public class TempBanCommand implements CommandExecutor {
         Event event = this.plugin.tempBanPlayer(
                 player.getName(),
                 sender.getName(),
-                args[1],
-                StringUtils.join(args," ",2,args.length - 1)
+                StringUtils.join(args," ",2,args.length),
+                args[1]
         );
 
         this.plugin.broadcast(event);

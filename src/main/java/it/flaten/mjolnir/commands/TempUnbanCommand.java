@@ -51,8 +51,8 @@ public class TempUnbanCommand implements CommandExecutor {
         Event event = this.plugin.tempUnbanPlayer(
             player.getName(),
             sender.getName(),
-            args[1],
-            StringUtils.join(args," ",2,args.length - 1)
+            StringUtils.join(args," ",2,args.length),
+            args[1]
         );
 
         this.plugin.broadcast(event);
