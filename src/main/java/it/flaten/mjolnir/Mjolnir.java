@@ -3,6 +3,7 @@ package it.flaten.mjolnir;
 import it.flaten.mjolnir.beans.Event;
 import it.flaten.mjolnir.commands.*;
 import it.flaten.mjolnir.events.IsBannedEvent;
+import it.flaten.mjolnir.events.NewEventEvent;
 import it.flaten.mjolnir.listeners.PlayerListener;
 import it.flaten.mjolnir.storages.NativeStorage;
 import it.flaten.mjolnir.storages.Storage;
@@ -40,11 +41,12 @@ public class Mjolnir extends JavaPlugin {
      * This can be used by {@link Storage} implementations to see which
      * beans it should expect.
      */
-    public static List<Class<?>> databaseClasses = new ArrayList<Class<?>>() {{
+    @SuppressWarnings("WeakerAccess")
+    public final static List<Class<?>> databaseClasses = new ArrayList<Class<?>>() {{
         add(Event.class);
     }};
 
-    private Map<String,Event> whyMap = new HashMap<>();
+    private final Map<String,Event> whyMap = new HashMap<>();
 
     /**
      * Plugin entry point.
@@ -219,7 +221,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player whose {@link Event}s to fetch.
      * @return       A {@link List} of {@link Event}s, oldest first.
      */
-    public List<Event> getEventHistory(String player) {
+    public List<Event> getEventHistory(final String player) {
         return this.storage.loadEvents(player);
     }
 
@@ -233,7 +235,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player whose {@link Event} to fetch.
      * @return       The active {@link Event}, or null.
      */
-    public Event getActiveEvent(String player) {
+    Event getActiveEvent(final String player) {
         return this.storage.loadActiveEvent(player);
     }
 
@@ -246,7 +248,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player whose {@link Event} to fetch.
      * @return       An {@link Event} created by an external plugin, or null.
      */
-    public Event getExternalEvent(String player) {
+    Event getExternalEvent(final String player) {
         IsBannedEvent isBannedEvent = new IsBannedEvent(player);
 
         this.getServer().getPluginManager().callEvent(isBannedEvent);
@@ -263,7 +265,7 @@ public class Mjolnir extends JavaPlugin {
      * @param event The {@link Event} that caused this kick.
      * @return      The message the kicked player will see.
      */
-    public String buildKickMessage(Event event) {
+    public String buildKickMessage(final Event event) {
         String message = this.getConfig().getString("kick.message")
             .replace("<reason>",event.getReason());
 
@@ -284,7 +286,7 @@ public class Mjolnir extends JavaPlugin {
      * @param event The {@link Event} that caused this kick.
      * @return      The message in-game players will see.
      */
-    public String buildBroadcastMessage(Event event) {
+    public String buildBroadcastMessage(final Event event) {
         String message = this.getConfig().getString("broadcast.message")
             .replace("<player>",event.getPlayer())
             .replace("<op>",event.getOp())
@@ -307,7 +309,7 @@ public class Mjolnir extends JavaPlugin {
      *
      * @param event The {@link Event} used to generate the message.
      */
-    public void broadcast(Event event) {
+    public void broadcast(final Event event) {
         this.getServer().broadcast(
             ChatColor.GRAY + this.buildBroadcastMessage(event),
             "mjolnir.info"
@@ -317,14 +319,14 @@ public class Mjolnir extends JavaPlugin {
     /**
      * Permanently ban a player.
      *
-     * Used to permanently ban and kick a player, with no reason.
+     * Used to permanently ban a player, with no reason.
      *
      * @param player The name of the player to kick and ban.
      * @param op     The name of the player who executes the ban.
      * @return       The resulting ban {@link Event}.
      */
-    public Event banPlayer(String player,String op) {
-        return this.kickPlayer(this.storage.saveEvent(player,op,Event.EventType.BAN,"",0));
+    public Event banPlayer(final String player,final String op) {
+        return this.storage.saveEvent(player, op, Event.EventType.BAN, "", 0);
     }
 
     /**
@@ -336,22 +338,22 @@ public class Mjolnir extends JavaPlugin {
      * @param op     The name of the player who executes the unban.
      * @return       The resulting unban {@link Event}.
      */
-    public Event unbanPlayer(String player,String op) {
+    public Event unbanPlayer(final String player,final String op) {
         return this.storage.saveEvent(player,op,Event.EventType.UNBAN,"",0);
     }
 
     /**
      * Ban a player.
      *
-     * Used to permanently ban and kick a player, with a reason.
+     * Used to permanently ban a player, with a reason.
      *
      * @param player The name of the player to kick and ban.
      * @param op     The name of the player who executes the ban.
      * @param reason The reason for this ban.
      * @return       The resulting ban {@link Event}.
      */
-    public Event banPlayer(String player,String op,String reason) {
-        return this.kickPlayer(this.storage.saveEvent(player,op,Event.EventType.BAN,reason,0));
+    public Event banPlayer(final String player,final String op,final String reason) {
+        return this.storage.saveEvent(player, op, Event.EventType.BAN, reason, 0);
     }
 
     /**
@@ -364,22 +366,22 @@ public class Mjolnir extends JavaPlugin {
      * @param reason The reason for this unban.
      * @return       The resulting unban {@link Event}.
      */
-    public Event unbanPlayer(String player,String op,String reason) {
+    public Event unbanPlayer(final String player,final String op,final String reason) {
         return this.storage.saveEvent(player,op,Event.EventType.UNBAN,reason,0);
     }
 
     /**
      * Temporarily ban a player.
      *
-     * Used to temporary ban and kick a player.
+     * Used to temporary ban a player.
      *
      * @param player  The name of the player to ban.
      * @param op      The name of the player who executes the ban.
      * @param expires Length of ban in {@link #parseTime(String)} format.
      * @return        The resulting ban {@link Event}.
      */
-    public Event tempBanPlayer(String player,String op,String expires) {
-        return this.kickPlayer(this.storage.saveEvent(player,op,Event.EventType.BAN,"",Mjolnir.parseTime(expires)));
+    public Event tempBanPlayer(final String player,final String op,final String expires) {
+        return this.storage.saveEvent(player, op, Event.EventType.BAN, "", Mjolnir.parseTime(expires));
     }
 
     /**
@@ -392,7 +394,7 @@ public class Mjolnir extends JavaPlugin {
      * @param expires Length of ban in {@link #parseTime(String)} format.
      * @return        The resulting unban {@link Event}.
      */
-    public Event tempUnbanPlayer(String player, String op, String expires) {
+    public Event tempUnbanPlayer(final String player,final String op,final String expires) {
         return this.storage.saveEvent(player,op,Event.EventType.UNBAN,"",Mjolnir.parseTime(expires));
     }
 
@@ -407,8 +409,8 @@ public class Mjolnir extends JavaPlugin {
      * @param expires Length of ban in {@link #parseTime(String)} format.
      * @return        The resulting ban {@link Event}.
      */
-    public Event tempBanPlayer(String player,String op,String reason,String expires) {
-        return this.kickPlayer(this.storage.saveEvent(player,op,Event.EventType.BAN,reason,Mjolnir.parseTime(expires)));
+    public Event tempBanPlayer(final String player,final String op,final String reason,final String expires) {
+        return this.storage.saveEvent(player, op, Event.EventType.BAN, reason, Mjolnir.parseTime(expires));
     }
 
     /**
@@ -422,12 +424,9 @@ public class Mjolnir extends JavaPlugin {
      * @param expires Length of unban in {@link #parseTime(String)} format.
      * @return        The resulting unban {@link Event}.
      */
-    public Event tempUnbanPlayer(String player,String op,String reason,String expires) {
+    public Event tempUnbanPlayer(final String player,final String op,final String reason,final String expires) {
         return this.storage.saveEvent(player,op,Event.EventType.UNBAN,reason,Mjolnir.parseTime(expires));
     }
-
-    // Takes a time string in the format "1y 2w 2d 4h 5m 6s"
-    // and returns a UNIX timestamp that far in the future.
 
     /**
      * Parse a time period string.
@@ -446,12 +445,12 @@ public class Mjolnir extends JavaPlugin {
      * @param time A length of time in the supported format.
      * @return     A UNIX timestamp somewhere in the future, or 0.
      */
-    private static int parseTime(String time) {
+    public static int parseTime(final String time) {
         int sum = 0;
         String buffer = "";
 
         for (int i = 0; i < time.length(); i++) {
-            char c = time.charAt(i);
+            final char c = time.charAt(i);
 
             if (Character.isDigit(c)) {
                 buffer += c;
@@ -479,21 +478,36 @@ public class Mjolnir extends JavaPlugin {
     }
 
     /**
-     * Kick a player.
+     * Pre-process an event.
      *
-     * This methods kicks the player defined in an {@link Event} if online.
+     * Invoked before the given {@link Event} is saved in storage. Fires off a
+     * {@link NewEventEvent} to let other plugins know a new {@link Event} is about to
+     * be created, and lets them cancel it.
      *
-     * @param event The {@link Event} to be used.
-     * @return      The {@link Event} that was used.
+     * @param event The {@link Event} to process.
      */
-    private Event kickPlayer(Event event) {
+    public NewEventEvent preProcess(final Event event) {
+        NewEventEvent newEventEvent = new NewEventEvent(event);
+
+        this.getServer().getPluginManager().callEvent(newEventEvent);
+
+        return newEventEvent;
+    }
+
+    /**
+     * Post-process an event.
+     *
+     * Invoked after the given {@link Event} has been saved in storage. Kicks
+     * online players when they are banned.
+     *
+     * @param event The {@link Event} to process.
+     */
+    public void postProcess(final Event event) {
         Player player = this.getServer().getPlayerExact(event.getPlayer());
 
         if (player != null) {
             player.kickPlayer(this.buildKickMessage(event));
         }
-
-        return event;
     }
 
     /**
@@ -505,7 +519,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player to check.
      * @return       Whether or not the given player is banned.
      */
-    public boolean isBanned(String player) {
+    public boolean isBanned(final String player) {
         return this.isBannedLocally(player) || this.isBannedExternally(player);
     }
 
@@ -521,8 +535,9 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player to check.
      * @return       Whether or not the given player is banned locally.
      */
-    public boolean isBannedLocally(String player) {
-        Event event = this.getActiveEvent(player);
+    @SuppressWarnings("WeakerAccess")
+    public boolean isBannedLocally(final String player) {
+        final Event event = this.getActiveEvent(player);
 
         if (event == null || event.getType() == Event.EventType.UNBAN) {
             return false;
@@ -542,11 +557,12 @@ public class Mjolnir extends JavaPlugin {
      * If the player is banned, {@link #why(String)} can be invoked to get the
      * {@link Event} dictating so.
      *
-     * @param player
-     * @return
+     * @param player The name of the player to check.
+     * @return       Whether or not the given player is banned externally.
      */
-    public boolean isBannedExternally(String player) {
-        Event event = this.getExternalEvent(player);
+    @SuppressWarnings("WeakerAccess")
+    public boolean isBannedExternally(final String player) {
+        final Event event = this.getExternalEvent(player);
 
         if (event == null || event.getType() == Event.EventType.UNBAN) {
             return false;
@@ -566,7 +582,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player this {@link Event} belongs to
      * @param event  The {@link Event}.
      */
-    public void why(String player,Event event) {
+    public void why(final String player,final Event event) {
         if (event == null) {
             this.whyMap.remove(player);
             return;
@@ -581,7 +597,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player whose {@link Event} to fetch.
      * @return       The {@link Event}.
      */
-    public Event why(String player) {
+    public Event why(final String player) {
         return this.whyMap.get(player);
     }
 }

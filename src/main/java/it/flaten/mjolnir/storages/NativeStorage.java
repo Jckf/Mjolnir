@@ -3,6 +3,7 @@ package it.flaten.mjolnir.storages;
 import com.avaje.ebean.*;
 import it.flaten.mjolnir.Mjolnir;
 import it.flaten.mjolnir.beans.Event;
+import it.flaten.mjolnir.events.NewEventEvent;
 
 import javax.persistence.PersistenceException;
 import java.util.List;
@@ -18,7 +19,7 @@ public class NativeStorage implements Storage {
      *
      * A place to store a reference to the running plugin.
      */
-    private Mjolnir plugin;
+    private final Mjolnir plugin;
 
     /**
      * Constructor.
@@ -27,7 +28,7 @@ public class NativeStorage implements Storage {
      *
      * @param plugin A reference to the running plugin.
      */
-    public NativeStorage(Mjolnir plugin) {
+    public NativeStorage(final Mjolnir plugin) {
         this.plugin = plugin;
     }
 
@@ -50,8 +51,8 @@ public class NativeStorage implements Storage {
      * {@inheritDoc}
      */
     @Override
-    public Event saveEvent(String player,String op,Event.EventType type,String reason,int expires) {
-        Event event = this.plugin.getDatabase().createEntityBean(Event.class);
+    public Event saveEvent(final String player,final String op,final Event.EventType type,final String reason,final int expires) {
+        final Event event = this.plugin.getDatabase().createEntityBean(Event.class);
 
         event.setTime((int) (System.currentTimeMillis() / 1000L));
         event.setPlayer(player);
@@ -60,7 +61,15 @@ public class NativeStorage implements Storage {
         event.setReason(reason);
         event.setExpires(expires);
 
+        NewEventEvent newEventEvent = this.plugin.preProcess(event);
+
+        if (newEventEvent.isCancelled()) {
+            return null;
+        }
+
         this.plugin.getDatabase().save(event);
+
+        this.plugin.postProcess(event);
 
         return event;
     }
@@ -69,14 +78,14 @@ public class NativeStorage implements Storage {
      * {@inheritDoc}
      */
     @Override
-    public List<Event> loadEvents(String player) {
-        Query<Event> query = this.plugin.getDatabase()
+    public List<Event> loadEvents(final String player) {
+        final Query<Event> query = this.plugin.getDatabase()
             .find(Event.class)
             .where()
                 .ieq("player",player)
             .orderBy("id ASC");
 
-        List<Event> events = query.findList();
+        final List<Event> events = query.findList();
 
         if (events == null || events.size() == 0) {
             return null;
@@ -89,7 +98,7 @@ public class NativeStorage implements Storage {
      * {@inheritDoc}
      */
     @Override
-    public Event loadActiveEvent(String player) {
+    public Event loadActiveEvent(final String player) {
         return this.plugin.getDatabase()
             .find(Event.class)
             .where()
@@ -108,6 +117,7 @@ public class NativeStorage implements Storage {
      * The native Bukkit database does not need to be shut down.
      */
     @Override
+    @SuppressWarnings("EmptyMethod")
     public void shutdown() {
 
     }
