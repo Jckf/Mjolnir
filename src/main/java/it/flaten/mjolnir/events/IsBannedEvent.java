@@ -3,6 +3,7 @@ package it.flaten.mjolnir.events;
 import it.flaten.mjolnir.beans.Event;
 import org.bukkit.event.HandlerList;
 
+@SuppressWarnings("UnusedDeclaration")
 public class IsBannedEvent extends org.bukkit.event.Event {
     private static final HandlerList handlers = new HandlerList();
 
@@ -18,7 +19,7 @@ public class IsBannedEvent extends org.bukkit.event.Event {
     private final String player;
     private Event event;
 
-    public IsBannedEvent(String player) {
+    public IsBannedEvent(final String player) {
         this.player = player;
     }
 
@@ -26,7 +27,7 @@ public class IsBannedEvent extends org.bukkit.event.Event {
         return this.player;
     }
 
-    public void setEvent(Event event) {
+    public void setEvent(final Event event) {
         this.event = event;
     }
 

@@ -12,26 +12,26 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class InfoCommand implements CommandExecutor {
-    private Mjolnir plugin;
+    final private Mjolnir plugin;
 
-    public InfoCommand(Mjolnir plugin) {
+    public InfoCommand(final Mjolnir plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(CommandSender sender,Command command,String label,String[] args) {
+    public boolean onCommand(final CommandSender sender,final Command command,final String label,final String[] args) {
         if (args.length == 0) {
             return false;
         }
 
-        OfflinePlayer player = this.plugin.getServer().getOfflinePlayer(args[0]);
+        final OfflinePlayer player = this.plugin.getServer().getOfflinePlayer(args[0]);
 
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Unknown player.");
             return true;
         }
 
-        List<Event> events = this.plugin.getEventHistory(player.getName());
+        final List<Event> events = this.plugin.getEventHistory(player.getName());
 
         if (events == null || events.size() == 0) {
             sender.sendMessage(ChatColor.GRAY + "No history.");
@@ -40,9 +40,9 @@ public class InfoCommand implements CommandExecutor {
 
         sender.sendMessage(ChatColor.GOLD + " ==== History for " + player.getName() + " ====");
 
-        int now = (int) (System.currentTimeMillis() / 1000L);
+        final int now = (int) (System.currentTimeMillis() / 1000L);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat(
+        final SimpleDateFormat dateFormat = new SimpleDateFormat(
             this.plugin.getConfig().getString("info.timestamp.format")
         );
 

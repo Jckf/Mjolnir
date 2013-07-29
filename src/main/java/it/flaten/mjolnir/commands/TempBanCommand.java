@@ -10,19 +10,19 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 public class TempBanCommand implements CommandExecutor {
-    private Mjolnir plugin;
+    private final Mjolnir plugin;
 
-    public TempBanCommand(Mjolnir plugin) {
+    public TempBanCommand(final Mjolnir plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(CommandSender sender,Command command,String label,String[] args) {
+    public boolean onCommand(final CommandSender sender,final Command command,final String label,final String[] args) {
         if (args.length <= 1) {
             return false;
         }
 
-        OfflinePlayer player = this.plugin.getServer().getOfflinePlayer(args[0]);
+        final OfflinePlayer player = this.plugin.getServer().getOfflinePlayer(args[0]);
 
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Unknown player.");
@@ -37,25 +37,29 @@ public class TempBanCommand implements CommandExecutor {
         // Ban, no reason.
         if (args.length == 2) {
             Event event = this.plugin.tempBanPlayer(
-                    player.getName(),
-                    sender.getName(),
-                    args[1]
+                player.getName(),
+                sender.getName(),
+                args[1]
             );
 
-            this.plugin.broadcast(event);
+            if (event != null) {
+                this.plugin.broadcast(event);
+            }
 
             return true;
         }
 
         // Ban
         Event event = this.plugin.tempBanPlayer(
-                player.getName(),
-                sender.getName(),
-                StringUtils.join(args," ",2,args.length),
-                args[1]
+            player.getName(),
+            sender.getName(),
+            StringUtils.join(args," ",2,args.length),
+            args[1]
         );
 
-        this.plugin.broadcast(event);
+        if (event != null) {
+            this.plugin.broadcast(event);
+        }
 
         return true;
     }

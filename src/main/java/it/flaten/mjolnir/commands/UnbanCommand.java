@@ -10,19 +10,19 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 public class UnbanCommand implements CommandExecutor {
-    private Mjolnir plugin;
+    private final Mjolnir plugin;
 
-    public UnbanCommand(Mjolnir plugin) {
+    public UnbanCommand(final Mjolnir plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(CommandSender sender,Command command,String label,String[] args) {
+    public boolean onCommand(final CommandSender sender,final Command command,final String label,final String[] args) {
         if (args.length == 0) {
             return false;
         }
 
-        OfflinePlayer player = this.plugin.getServer().getOfflinePlayer(args[0]);
+        final OfflinePlayer player = this.plugin.getServer().getOfflinePlayer(args[0]);
 
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Unknown player.");
@@ -41,7 +41,9 @@ public class UnbanCommand implements CommandExecutor {
                 sender.getName()
             );
 
-            this.plugin.broadcast(event);
+            if (event != null) {
+                this.plugin.broadcast(event);
+            }
 
             return true;
         }
@@ -53,7 +55,9 @@ public class UnbanCommand implements CommandExecutor {
             StringUtils.join(args," ",1,args.length)
         );
 
-        this.plugin.broadcast(event);
+        if (event != null) {
+            this.plugin.broadcast(event);
+        }
 
         return true;
     }
