@@ -32,24 +32,24 @@ commands:
   infractions:
     description: Gets information about a given player from Mjölnir.
     usage: /<command> [player]
-    permission: <plugin name>.info
+    permission: mjolnir.info
 
   tempban:
     description: Bans a given player in Mjölnir for the given amount of time, with an optional reason.
     usage: /<command> [player] [time] [reason]
-    permission: <plugin name>.ban.temp
+    permission: mjolnir.ban.temp
 
   ban:
     description: Bans a given player in Mjölnir, with an optional reason.
     usage: /<command> [player] [reason]
-    permission: <plugin name>.ban.perm
+    permission: mjolnir.ban.perm
 
   tempunban:
     description: Unbans a given player in Mjölnir for the given amount of time, with an optional reason.
     usage: /<command> [player] [time] [reason]
-    permission: <plugin name>.unban.temp
+    permission: mjolnir.unban.temp
 
   unban:
     description: Unbans a given player in Mjölnir, with an optional reason.
     usage: /<command> [player] [reason]
-    permission: <plugin name>.unban.perm
+    permission: mjolnir.unban.perm
