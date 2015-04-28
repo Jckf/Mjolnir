@@ -1,6 +1,7 @@
 package it.flaten.mjolnir.listeners;
 
 import it.flaten.mjolnir.Mjolnir;
+import it.flaten.mjolnir.beans.Event;
 import it.flaten.mjolnir.tasks.PlayerTask;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -62,6 +63,25 @@ public class PlayerListener implements Listener {
             event.setKickMessage(this.plugin.buildKickMessage(this.plugin.why(player)));
             event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             return;
+        }
+
+        /**
+         * Check if any of the player's previous names where banned while they were
+         * using it.
+         */
+        Map<Integer, String> history = this.plugin.getNameHistory(event.getPlayer().getUniqueId());
+        for (int ts : history.keySet()) {
+            String previousName = history.get(ts);
+
+            if (this.plugin.isBanned(previousName)) {
+                Event previousEvent = this.plugin.getActiveEvent(previousName);
+
+                if (this.plugin.hadNameAtTime(event.getPlayer().getUniqueId(), previousName, previousEvent.getTime())) {
+                    event.setKickMessage(this.plugin.buildKickMessage(this.plugin.why(previousName)));
+                    event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
+                    return;
+                }
+            }
         }
 
         /**

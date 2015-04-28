@@ -1,5 +1,8 @@
 package it.flaten.mjolnir;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import it.flaten.mjolnir.beans.Event;
 import it.flaten.mjolnir.commands.*;
 import it.flaten.mjolnir.events.IsBannedEvent;
@@ -12,11 +15,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The plugin's main class.
@@ -47,6 +52,7 @@ public class Mjolnir extends JavaPlugin {
     }};
 
     private final Map<String,Event> whyMap = new HashMap<>();
+    private final Map<UUID, Map<Integer, String>> nameHistoryCache = new HashMap<>();
 
     /**
      * Plugin entry point.
@@ -235,7 +241,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player whose {@link Event} to fetch.
      * @return       The active {@link Event}, or null.
      */
-    Event getActiveEvent(final String player) {
+    public Event getActiveEvent(final String player) {
         return this.storage.loadActiveEvent(player);
     }
 
@@ -248,7 +254,7 @@ public class Mjolnir extends JavaPlugin {
      * @param player The name of the player whose {@link Event} to fetch.
      * @return       An {@link Event} created by an external plugin, or null.
      */
-    Event getExternalEvent(final String player) {
+    public Event getExternalEvent(final String player) {
         IsBannedEvent isBannedEvent = new IsBannedEvent(player);
 
         this.getServer().getPluginManager().callEvent(isBannedEvent);
@@ -274,7 +280,7 @@ public class Mjolnir extends JavaPlugin {
                 .replace("<expires>",new SimpleDateFormat(this.getConfig().getString("kick.expires.format")).format(event.getExpires() * 1000L));
         }
 
-        return message.replace("&",String.valueOf(ChatColor.COLOR_CHAR));
+        return message.replace("&", String.valueOf(ChatColor.COLOR_CHAR));
     }
 
     /**
@@ -289,8 +295,8 @@ public class Mjolnir extends JavaPlugin {
     public String buildBroadcastMessage(final Event event) {
         String message = this.getConfig().getString("broadcast.message")
             .replace("<player>",event.getPlayer())
-            .replace("<op>",event.getOp())
-            .replace("<type>",event.getType().toString().toLowerCase())
+            .replace("<op>", event.getOp())
+            .replace("<type>", event.getType().toString().toLowerCase())
             .replace("<reason>",event.getReason());
 
         if (event.getExpires() > 0) {
@@ -588,7 +594,7 @@ public class Mjolnir extends JavaPlugin {
             return;
         }
 
-        this.whyMap.put(player,event);
+        this.whyMap.put(player, event);
     }
 
     /**
@@ -599,5 +605,73 @@ public class Mjolnir extends JavaPlugin {
      */
     public Event why(final String player) {
         return this.whyMap.get(player);
+    }
+
+    /**
+     * Get the name history for a given UUID.
+     *
+     * @param uuid UUID to look up.
+     * @return     A {@link Map} with timestamp as keys and names as values.
+     */
+    public Map<Integer, String> getNameHistory(UUID uuid) {
+        if (this.nameHistoryCache.containsKey(uuid))
+            return this.nameHistoryCache.get(uuid);
+
+        HashMap<Integer, String> history = new HashMap<>();
+
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.mojang.com/user/profiles/" + uuid + "/names").openConnection();
+            connection.connect();
+
+            JsonObject root = new JsonParser().parse(new InputStreamReader((InputStream) connection.getContent())).getAsJsonObject();
+
+            for (JsonElement entry : root.getAsJsonArray()) {
+                JsonObject object = entry.getAsJsonObject();
+
+                history.put(
+                    object.get("changedToAt") == null ? 0 : object.get("changedToAt").getAsInt(),
+                    object.get("name").getAsString()
+                );
+            }
+        } catch (IOException exception) {
+            this.getLogger().warning("Failed to fetch name history!");
+
+            exception.printStackTrace();
+        }
+
+        this.nameHistoryCache.put(uuid, history);
+
+        return history;
+    }
+
+    /**
+     * Checks if the given UUID had the given name at the given time.
+     *
+     * @param uuid      UUID to compare.
+     * @param name      Name to compare.
+     * @param timestamp Timestamp to compare.
+     * @return          True if the values match. False otherwise.
+     */
+    public boolean hadNameAtTime(UUID uuid, String name, int timestamp) {
+        Map<Integer, String> history = this.getNameHistory(uuid);
+
+        for (int ts : history.keySet()) {
+            if (!history.get(ts).equals(name))
+                continue;
+
+            int next = (int) (System.currentTimeMillis() / 1000L);
+            for (int ts2 : history.keySet()) {
+                if (ts < ts2 && ts2 < next) {
+                    next = ts2;
+                    break;
+                }
+            }
+
+            if (ts < timestamp && timestamp < next) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
