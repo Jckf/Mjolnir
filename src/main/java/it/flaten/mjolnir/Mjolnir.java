@@ -622,6 +622,11 @@ public class Mjolnir extends JavaPlugin {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL("https://api.mojang.com/user/profiles/" + uuid + "/names").openConnection();
             connection.connect();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setUseCaches(false);
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
 
             JsonObject root = new JsonParser().parse(new InputStreamReader((InputStream) connection.getContent())).getAsJsonObject();
 
